@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I'm Sorry</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500&family=Manrope:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --wine-deep: #2a060b;
+    --wine: #3f0c14;
+    --crimson: #8e1626;
+    --red: #c22336;
+    --rose: #e8879a;
+    --gold: #d8ab5c;
+    --cream: #f7ece4;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  html{ scroll-behavior:smooth; }
+  html,body{
+    height:100%;
+    width:100%;
+    max-width: 100vw;
+    background: var(--wine-deep);
+    color: var(--cream);
+    font-family:'Manrope', sans-serif;
+    overflow-x:hidden;
+  }
+
+  h1,h2,h3, .display{
+    font-family:'Cormorant Garamond', serif;
+    font-weight:500;
+  }
+
+  ::selection{ background: var(--rose); color: var(--wine-deep); }
+
+  #glow{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 15%, rgba(194,35,54,0.35), transparent 60%),
+      radial-gradient(ellipse 55% 45% at 85% 75%, rgba(142,22,38,0.4), transparent 60%),
+      linear-gradient(180deg, var(--wine-deep), var(--wine));
+  }
+  .ember{
+    position:absolute; border-radius:50%;
+    background: radial-gradient(circle, var(--rose), transparent 70%);
+    opacity:0.5; filter: blur(0.5px);
+    animation: rise linear infinite;
+  }
+  @keyframes rise{
+    from{ transform: translateY(0) scale(1); opacity:0.55; }
+    to{ transform: translateY(-110vh) scale(0.6); opacity:0; }
+  }
+
+  section{
+    position:relative; z-index:1;
+    min-height:100vh;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center;
+    padding: 8vh 6vw;
+  }
+
+  /* ---------- HERO ---------- */
+  .eyebrow{
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    color: var(--rose);
+    margin-bottom: 0.7rem;
+  }
+  .hero-title{
+    font-size: clamp(2.6rem, 7vw, 5rem);
+    line-height: 1.05;
+    max-width: 15ch;
+  }
+  .hero-title em{ font-style: italic; color: var(--rose); }
+  .hero-sub{
+    margin-top: 1.3rem;
+    max-width: 44ch;
+    color: #e6c9c9;
+    font-weight: 300;
+    line-height: 1.6;
+  }
+
+  /* the tappable heart */
+  .tap-heart-wrap{ margin-top: 3rem; position:relative; }
+  .tap-heart{
+    width: 92px; height: 92px;
+    cursor: pointer;
+    border:none; background:none;
+    transform-origin:center;
+    animation: beatBig 1.6s ease-in-out infinite;
+    filter: drop-shadow(0 0 22px rgba(200,29,51,0.55));
+  }
+  .tap-heart svg{ width:100%; height:100%; }
+  @keyframes beatBig{
+    0%,100%{ transform: scale(1); }
+    50%{ transform: scale(1.08); }
+  }
+  .tap-hint{
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: var(--rose);
+    opacity: 0.85;
+  }
+
+  /* burst hearts */
+  .burst-heart{
+    position:fixed; top:0; left:0;
+    width: 18px; height:18px;
+    pointer-events:none;
+    z-index: 50;
+    opacity: 1;
+  }
+
+  /* page transition veil */
+  #veil{
+    position:fixed; inset:0; z-index:40;
+    background: radial-gradient(circle at 50% 50%, var(--red), var(--wine-deep) 75%);
+    transform: scale(0);
+    border-radius: 50%;
+    pointer-events:none;
+    transition: transform 0.9s cubic-bezier(.4,0,.2,1);
+  }
+  #veil.expand{ transform: scale(3.2); }
+
+  /* pages */
+  .page{
+    display:none;
+  }
+  .page.active{
+    display:flex;
+    animation: fadeUp 0.9s ease both;
+  }
+  @keyframes fadeUp{
+    from{ opacity:0; transform: translateY(24px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+
+  /* ---------- LETTER PAGE ---------- */
+  .letter-head{
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    margin-bottom: 2.2rem;
+    max-width: 20ch;
+  }
+  .envelope-wrap{ perspective: 1400px; margin-bottom: 2rem; }
+  .envelope{
+    width: min(88vw, 420px);
+    aspect-ratio: 16/10.5;
+    position:relative;
+    cursor:pointer;
+    transform-style: preserve-3d;
+    transition: transform 0.6s ease;
+  }
+  .envelope:hover{ transform: rotateX(4deg) rotateY(-4deg) translateY(-4px); }
+  .env-body{
+    position:absolute; inset:0;
+    background: linear-gradient(155deg, var(--crimson), #5a0f1a);
+    border-radius: 10px;
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,0.6), 0 0 0 1px rgba(216,171,92,0.18) inset;
+  }
+  .env-flap{
+    position:absolute; top:0; left:0; right:0; height:55%;
+    background: linear-gradient(155deg, #a3182a, #6e0f1c);
+    clip-path: polygon(0 0, 100% 0, 50% 78%);
+    transform-origin: top center;
+    transition: transform 0.7s cubic-bezier(.4,0,.2,1);
+    border-radius: 10px 10px 0 0;
+    z-index:3;
+  }
+  .envelope.open .env-flap{ transform: rotateX(180deg); }
+  .env-seal{
+    position:absolute; top: 34%; left:50%; transform: translate(-50%,-50%);
+    width: 46px; height:46px; border-radius:50%;
+    background: radial-gradient(circle at 35% 30%, #e7c98a, var(--gold));
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Cormorant Garamond',serif; font-style:italic; color:#3f0c14; font-size:1.2rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.35);
+    z-index:4; transition: opacity 0.3s ease;
+  }
+  .envelope.open .env-seal{ opacity:0; pointer-events:none; }
+  .env-note{
+    position:absolute; left:6%; right:6%; bottom:6%; top: 18%;
+    background: var(--cream); color: #401019;
+    border-radius: 6px;
+    display:flex; align-items:center; justify-content:center;
+    text-align:center; padding: 1.2rem;
+    font-family:'Cormorant Garamond', serif;
+    font-size: clamp(0.85rem, 2vw, 1rem);
+    line-height:1.5;
+    box-shadow: 0 -6px 18px rgba(0,0,0,0.15) inset;
+    transform: translateY(6%); opacity: 0;
+    transition: transform 0.6s ease 0.15s, opacity 0.5s ease 0.15s;
+    z-index:2;
+  }
+  .envelope.open .env-note{ transform: translateY(-14%); opacity:1; }
+  .env-hint{ margin-top: 1.3rem; font-size: 0.85rem; color: var(--rose); opacity:0.85; }
+
+  .next-link{
+    margin-top: 3rem;
+    background:none; border: 1px solid rgba(232,135,154,0.5);
+    color: var(--cream);
+    padding: 0.8rem 1.8rem;
+    border-radius: 999px;
+    font-family:'Manrope', sans-serif;
+    font-size: 0.9rem;
+    cursor:pointer;
+    transition: all 0.3s ease;
+    opacity: 0;
+    pointer-events:none;
+  }
+  .next-link.show{ opacity:1; pointer-events:auto; }
+  .next-link:hover{ background: rgba(232,135,154,0.12); border-color: var(--rose); }
+
+  /* ---------- PROMISES ---------- */
+  .promises-head{
+    font-size: clamp(2rem, 5vw, 3rem);
+    margin-bottom: 3.5rem;
+    max-width: 18ch;
+  }
+  .promise-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 1.6rem;
+    width:100%;
+    max-width: 980px;
+  }
+  .promise-card{
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(232,135,154,0.2);
+    border-radius: 14px;
+    padding: 2rem 1.6rem;
+    text-align:left;
+    transition: transform 0.4s ease, border-color 0.4s ease, background 0.4s ease;
+  }
+  .promise-card:hover{
+    transform: translateY(-6px);
+    border-color: rgba(232,135,154,0.55);
+    background: rgba(255,255,255,0.07);
+  }
+  .promise-mark{
+    font-family:'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 2.2rem;
+    color: var(--rose);
+    display:block; margin-bottom: 0.8rem;
+  }
+  .promise-card p{
+    color: var(--cream);
+    font-size: 1.02rem;
+    line-height:1.55;
+    font-weight:300;
+  }
+
+  /* ---------- FINALE ---------- */
+  #finale{ position:relative; }
+  .finale-title{
+    font-size: clamp(3rem, 9vw, 6.5rem);
+    color: var(--cream);
+    margin-bottom: 0.6rem;
+  }
+  .finale-title .heart-inline{ color: var(--red); }
+  .finale-sub{
+    color: #e6c9c9;
+    max-width: 40ch;
+    margin-bottom: 3rem;
+    font-weight: 300;
+  }
+
+  .choice-row{
+    display:flex; gap: 1.4rem; flex-wrap:wrap; justify-content:center;
+    align-items:center;
+    position:relative;
+    width: 100%;
+    min-height: 90px;
+  }
+
+  .btn{
+    font-family:'Manrope', sans-serif;
+    font-size: 1rem;
+    padding: 1rem 2.1rem;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+  }
+  .btn-yes{
+    background: linear-gradient(135deg, var(--red), var(--crimson));
+    color: var(--cream);
+    box-shadow: 0 10px 30px -8px rgba(194,35,54,0.7);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  .btn-yes:hover{ transform: translateY(-3px) scale(1.03); box-shadow: 0 14px 34px -6px rgba(194,35,54,0.8); }
+
+  .btn-runaway{
+    background: transparent;
+    color: rgba(247,236,228,0.55);
+    border: 1px solid rgba(247,236,228,0.25);
+    position: relative;
+    transition: transform 0.15s ease;
+  }
+
+  .yes-result{
+    margin-top: 2.2rem;
+    font-family:'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.4rem;
+    color: var(--rose);
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+  .yes-result.show{ opacity:1; }
+
+  .tiny-hearts{ margin-top: 2.6rem; display:flex; gap: 0.9rem; }
+  .tiny-hearts span{
+    width:8px; height:8px; background: var(--rose);
+    transform: rotate(45deg); opacity:0.75;
+    animation: beat 1.8s ease-in-out infinite;
+  }
+  .tiny-hearts span:nth-child(2){ animation-delay:0.2s; }
+  .tiny-hearts span:nth-child(3){ animation-delay:0.4s; }
+  @keyframes beat{ 0%,100%{ transform: rotate(45deg) scale(1);} 50%{ transform: rotate(45deg) scale(1.4);} }
+
+  footer{
+    position:relative; z-index:1;
+    text-align:center;
+    padding: 2rem 1rem 3rem;
+    color: var(--rose);
+    font-size: 0.75rem;
+    opacity:0.6;
+  }
+
+  /* ---------- Responsive tuning ---------- */
+
+  /* Large screens (laptops/desktops): keep line lengths and layout comfortable
+     instead of letting everything stretch edge-to-edge. */
+  @media (min-width: 1000px){
+    section{ padding: 8vh 8vw; }
+    .hero-sub, .finale-sub{ font-size: 1.1rem; }
+  }
+
+  /* Tablets (iPad portrait/landscape and similar) */
+  @media (max-width: 900px){
+    .promise-grid{ max-width: 640px; }
+    .letter-head, .promises-head{ margin-bottom: 2.2rem; }
+  }
+
+  /* Phones */
+  @media (max-width: 560px){
+    section{ padding: 7vh 6vw; min-height: 100svh; }
+    .eyebrow{ font-size: 0.7rem; }
+    .tap-heart{ width: 76px; height: 76px; }
+    .envelope{ width: min(92vw, 360px); }
+    .env-note{ font-size: 0.85rem; padding: 0.9rem; }
+    .promise-grid{ grid-template-columns: 1fr; gap: 1.1rem; }
+    .promise-card{ padding: 1.6rem 1.4rem; }
+    .choice-row{ gap: 1rem; }
+    .btn{ padding: 0.9rem 1.7rem; font-size: 0.95rem; }
+    .finale-title{ font-size: clamp(2.4rem, 12vw, 3.6rem); }
+  }
+
+  /* Very small / narrow phones */
+  @media (max-width: 360px){
+    .hero-title{ font-size: clamp(2.1rem, 9vw, 2.6rem); }
+    .tap-heart{ width: 64px; height: 64px; }
+    .scene{ width: 200px; height: 200px; }
+  }
+
+  /* Landscape phones (short viewport height) — avoid clipped content */
+  @media (max-height: 480px) and (orientation: landscape){
+    section{ min-height: auto; padding: 5rem 6vw; }
+    .tap-heart-wrap{ margin-top: 1.5rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<div id="glow"></div>
+<div id="veil"></div>
+
+<!-- PAGE 1: HERO -->
+<div class="page active" id="page-1" style="width:100%;">
+  <section id="hero">
+    <div class="eyebrow">a small letter, for you</div>
+    <h1 class="hero-title display">I'm <em>sorry</em>, my love</h1>
+    <p class="hero-sub">Before anything else — I'm sorry. There's something I need to say. Tap the heart when you're ready.</p>
+
+    <div class="tap-heart-wrap">
+      <button class="tap-heart" id="tapHeart" aria-label="Open the letter">
+        <svg viewBox="0 0 32 29" fill="none"><path d="M16 29C16 29 0 19.5 0 9.7C0 3.9 4.5 0 9.6 0C12.9 0 15.1 1.7 16 3.6C16.9 1.7 19.1 0 22.4 0C27.5 0 32 3.9 32 9.7C32 19.5 16 29 16 29Z" fill="#c22336"/></svg>
+      </button>
+      <div class="tap-hint">tap the heart</div>
+    </div>
+  </section>
+</div>
+
+<!-- PAGE 2: LETTER -->
+<div class="page" id="page-2" style="width:100%;">
+  <section id="letter">
+    <h2 class="letter-head display">Something I need you to hear</h2>
+    <div class="envelope-wrap">
+      <div class="envelope" id="envelope">
+        <div class="env-body"></div>
+        <div class="env-note">
+          I'm sorry for the way I made you feel. You didn't deserve that.<br><br>
+          You mean more to me than I probably show, and I hate that I hurt someone
+          who has only ever been good to me. Please forgive me.
+        </div>
+        <div class="env-flap"></div>
+        <div class="env-seal">&hearts;</div>
+      </div>
+    </div>
+    <div class="env-hint">tap the envelope to open it</div>
+    <button class="next-link" id="toPromises">keep reading →</button>
+  </section>
+</div>
+
+<!-- PAGE 3: PROMISES -->
+<div class="page" id="page-3" style="width:100%;">
+  <section id="promises">
+    <h2 class="promises-head display">What I want you to know</h2>
+    <div class="promise-grid">
+      <div class="promise-card">
+        <span class="promise-mark">01</span>
+        <p>I am always with you — through the good days and the hard ones. That doesn't change.</p>
+      </div>
+      <div class="promise-card">
+        <span class="promise-mark">02</span>
+        <p>I will never doubt you, and I will always trust you. You've earned that, and I won't forget it again.</p>
+      </div>
+      <div class="promise-card">
+        <span class="promise-mark">03</span>
+        <p>We will grow together, one day at a time, learning each other better as we go.</p>
+      </div>
+      <div class="promise-card">
+        <span class="promise-mark">04</span>
+        <p>And one day, we will look back at this and smile — because we became successful, together.</p>
+      </div>
+    </div>
+    <button class="next-link show" id="toFinale" style="margin-top:3.5rem;">one last thing →</button>
+  </section>
+</div>
+
+<!-- PAGE 4: FINALE -->
+<div class="page" id="page-4" style="width:100%;">
+  <section id="finale">
+    <h1 class="finale-title display">I love <span class="heart-inline">you</span>.</h1>
+    <p class="finale-sub">That's really all this was about. So — do you love me too?</p>
+
+    <div class="choice-row">
+      <button class="btn btn-yes" id="btnYes">I love you too</button>
+      <button class="btn btn-runaway" id="btnNo">I don't</button>
+    </div>
+
+    <div class="yes-result" id="yesResult">that's all I needed to hear. ❤</div>
+
+    <div class="tiny-hearts"><span></span><span></span><span></span></div>
+  </section>
+</div>
+
+<footer>made with a full heart, for you</footer>
+
+<script>
+  // ambient embers
+  const glow = document.getElementById('glow');
+  const emberCount = window.innerWidth < 600 ? 16 : 28;
+  for(let i=0;i<emberCount;i++){
+    const e = document.createElement('div');
+    e.className = 'ember';
+    const size = Math.random()*6 + 3;
+    e.style.width = size+'px';
+    e.style.height = size+'px';
+    e.style.left = Math.random()*100+'%';
+    e.style.top = (100 + Math.random()*20)+'%';
+    e.style.animationDuration = (Math.random()*10+10)+'s';
+    e.style.animationDelay = (Math.random()*8)+'s';
+    glow.appendChild(e);
+  }
+
+  // heart burst helper
+  function burstHearts(x, y, count){
+    for(let i=0;i<count;i++){
+      const h = document.createElement('div');
+      h.className = 'burst-heart';
+      h.innerHTML = '<svg viewBox="0 0 32 29" fill="none"><path d="M16 29C16 29 0 19.5 0 9.7C0 3.9 4.5 0 9.6 0C12.9 0 15.1 1.7 16 3.6C16.9 1.7 19.1 0 22.4 0C27.5 0 32 3.9 32 9.7C32 19.5 16 29 16 29Z" fill="' + (Math.random()>0.5 ? '#c22336' : '#e8879a') + '"/></svg>';
+      h.style.left = x + 'px';
+      h.style.top = y + 'px';
+      document.body.appendChild(h);
+
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 90 + Math.random() * 160;
+      const dx = Math.cos(angle) * dist;
+      const dy = Math.sin(angle) * dist - 60;
+      const rot = (Math.random() * 360 - 180);
+      const dur = 900 + Math.random() * 500;
+
+      h.animate([
+        { transform: 'translate(-50%,-50%) translate(0,0) rotate(0deg) scale(0.4)', opacity: 1 },
+        { transform: `translate(-50%,-50%) translate(${dx*0.6}px, ${dy*0.6}px) rotate(${rot*0.6}deg) scale(1)`, opacity: 1, offset: 0.5 },
+        { transform: `translate(-50%,-50%) translate(${dx}px, ${dy + 80}px) rotate(${rot}deg) scale(0.5)`, opacity: 0 }
+      ], { duration: dur, easing: 'cubic-bezier(.2,.7,.3,1)' });
+
+      setTimeout(() => h.remove(), dur + 50);
+    }
+  }
+
+  function goToPage(pageEl){
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    pageEl.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+  }
+
+  // Page 1 -> Page 2 transition
+  const tapHeart = document.getElementById('tapHeart');
+  const veil = document.getElementById('veil');
+  tapHeart.addEventListener('click', (e) => {
+    const rect = tapHeart.getBoundingClientRect();
+    const cx = rect.left + rect.width/2;
+    const cy = rect.top + rect.height/2;
+    burstHearts(cx, cy, 18);
+
+    veil.style.left = cx + 'px';
+    veil.style.top = cy + 'px';
+    veil.style.width = '40px';
+    veil.style.height = '40px';
+    veil.style.marginLeft = '-20px';
+    veil.style.marginTop = '-20px';
+    veil.classList.add('expand');
+
+    setTimeout(() => {
+      goToPage(document.getElementById('page-2'));
+      veil.classList.remove('expand');
+      veil.style.transform = 'scale(0)';
+    }, 650);
+  });
+
+  // envelope open + reveal "keep reading"
+  const envelope = document.getElementById('envelope');
+  const toPromises = document.getElementById('toPromises');
+  envelope.addEventListener('click', function(){
+    this.classList.toggle('open');
+    if(this.classList.contains('open')){
+      setTimeout(() => toPromises.classList.add('show'), 500);
+    }
+  });
+  toPromises.addEventListener('click', () => goToPage(document.getElementById('page-3')));
+
+  // to finale
+  document.getElementById('toFinale').addEventListener('click', () => goToPage(document.getElementById('page-4')));
+
+  // finale buttons
+  const btnYes = document.getElementById('btnYes');
+  const btnNo = document.getElementById('btnNo');
+  const yesResult = document.getElementById('yesResult');
+  const choiceRow = document.querySelector('.choice-row');
+
+  btnYes.addEventListener('click', (e) => {
+    const rect = btnYes.getBoundingClientRect();
+    burstHearts(rect.left + rect.width/2, rect.top + rect.height/2, 24);
+    yesResult.classList.add('show');
+  });
+
+  // "I don't" button dodges the cursor / touch — effectively unclickable.
+  // Works by computing an absolute target position anywhere within the
+  // visible viewport (with margin) and translating there, so it behaves
+  // correctly on any screen size from a small phone to a wide laptop.
+  function dodge(){
+    const margin = 16;
+    const rect = btnNo.getBoundingClientRect();
+    const maxLeft = Math.max(margin, window.innerWidth - rect.width - margin);
+    const maxTop = Math.max(margin, window.innerHeight - rect.height - margin);
+    const targetLeft = margin + Math.random() * (maxLeft - margin);
+    const targetTop = margin + Math.random() * (maxTop - margin);
+
+    const deltaX = targetLeft - rect.left;
+    const deltaY = targetTop - rect.top;
+
+    const style = window.getComputedStyle(btnNo);
+    const matrix = new DOMMatrixReadOnly(style.transform);
+    const currentX = matrix.m41 || 0;
+    const currentY = matrix.m42 || 0;
+
+    btnNo.style.position = 'relative';
+    btnNo.style.zIndex = '30';
+    btnNo.style.transform = `translate(${currentX + deltaX}px, ${currentY + deltaY}px)`;
+  }
+  btnNo.addEventListener('mouseenter', dodge);
+  btnNo.addEventListener('touchstart', (e) => { e.preventDefault(); dodge(); }, { passive:false });
+  window.addEventListener('resize', () => {
+    // keep it from ever getting stranded off-screen after an orientation/resize change
+    const rect = btnNo.getBoundingClientRect();
+    if(rect.left < 0 || rect.top < 0 || rect.right > window.innerWidth || rect.bottom > window.innerHeight){
+      btnNo.style.transform = 'translate(0,0)';
+    }
+  });
+</script>
+
+</body>
+</html>
